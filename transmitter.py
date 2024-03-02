@@ -22,7 +22,7 @@ HOST = '127.0.0.1'  # IP del receptor
 PORT = 65432        # Puerto para la conexión
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.connect((HOST, PORT))
+    s.connect((127.0.0.1, 65432))
     while True:
         mensaje = input("Ingrese el mensaje a enviar: ")
         morse = text_to_morse(mensaje)
