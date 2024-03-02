@@ -22,7 +22,7 @@ def save_transmission(message):
         file.write(message + '\n')
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.bind((HOST, PORT))
+    s.bind((127.0.0.1, 65432))
     s.listen()
     print('Waiting for connection from the transmitter...')
     while True:
