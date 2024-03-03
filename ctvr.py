@@ -1,31 +1,36 @@
 import socket
-import time
 
-# Definir el alfabeto Morse
-morse_code = {
-    'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 'G': '--.', 'H': '....', 'I': '..', 
-    'J': '.---', 'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.', 
-    'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-', 'Y': '-.--', 'Z': '--..', 
-    '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....', '6': '-....', '7': '--...', 
-    '8': '---..', '9': '----.', ' ': ' '
+# Configure the receiver
+RECEIVER_HOST = '172.22.144.1'  # IP address of the receiver
+RECEIVER_PORT = 8080             # Port for connection
+
+# Morse code dictionary
+MORSE_CODE_DICT = {
+    'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 'G': '--.', 'H': '....',
+    'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---', 'P': '.--.',
+    'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+    'Y': '-.--', 'Z': '--..', '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....',
+    '6': '-....', '7': '--...', '8': '---..', '9': '----.', '0': '-----', ' ': '/'
 }
 
 def text_to_morse(text):
-    morse = ''
-    for char in text.upper():
-        if char in morse_code:
-            morse += morse_code[char] + ' '
-    return morse
+    morse_code = ""
+    for char in text:
+        if char.upper() in MORSE_CODE_DICT:
+            morse_code += MORSE_CODE_DICT[char.upper()] + " "
+    return morse_code
 
-# Configurar el emisor
-HOST = '127.0.0.1'  # IP del receptor
-PORT = 65432        # Puerto para la conexión
+def transmit_message(message):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((RECEIVER_HOST, RECEIVER_PORT))
+        s.sendall(message.encode())
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.connect((127.0.0.1, 65432))
+if __name__ == "__main__":
+    print("Transmitter is online.")
     while True:
-        mensaje = input("Ingrese el mensaje a enviar: ")
-        morse = text_to_morse(mensaje)
-        print("Mensaje en Morse:", morse)
-        s.sendall(morse.encode())
-        time.sleep(0.5)  # Esperar antes de enviar el siguiente mensaje
+        message_to_send = input("Enter message to send (or type 'exit' to quit): ")
+        if message_to_send.lower() == 'exit':
+            break
+        morse_message = text_to_morse(message_to_send)
+        print("Message in Morse Code:", morse_message)
+        transmit_message(morse_message)
