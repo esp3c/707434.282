@@ -1,38 +1,46 @@
 import socket
-import time
-from colorama import init, Fore, Style
+import os
 
-# Configure the receiver
-HOST = '127.0.0.1'  # Listen on all interfaces
-PORT = 65432        # Port for connection
-LOG_FILE = 'transmission_log.txt'
+HOST = '172.22.144.1'  
+PORT = 8080            
 
-# Initialize colorama
-init()
+MORSE_CODE_DICT = {
+    'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 'G': '--.', 'H': '....',
+    'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---', 'P': '.--.',
+    'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+    'Y': '-.--', 'Z': '--..', '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....',
+    '6': '-....', '7': '--...', '8': '---..', '9': '----.', '0': '-----', ' ': '/'
+}
 
-def print_message(message_top, message_bottom):
-    border = Fore.RED + Style.BRIGHT + "+" + "-"*(max(len(message_top), len(message_bottom))+2) + "+"
-    print(border)
-    print("| " + message_top.ljust(max(len(message_top), len(message_bottom))) + " |")
-    print("| " + message_bottom.ljust(max(len(message_top), len(message_bottom))) + " |")
-    print(border)
+REVERSE_MORSE_CODE_DICT = {value: key for key, value in MORSE_CODE_DICT.items()}
 
 def save_transmission(message):
-    with open(LOG_FILE, 'a') as file:
+    with open('transmission_log.txt', 'a') as file:
         file.write(message + '\n')
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.bind((127.0.0.1, 65432))
-    s.listen()
-    print('Waiting for connection from the transmitter...')
-    while True:
-        conn, addr = s.accept()
-        with conn:
-            print('Connected to', addr)
-            while True:
-                data = conn.recv(1024)
-                if not data:
-                    break
-                message = data.decode()
-                print_message("Transmission received", "Message: " + message)
-                save_transmission("Transmission received: " + message)
+def morse_to_text(morse_code):
+    text = ""
+    morse_code = morse_code.split(" ")
+    for code in morse_code:
+        if code in REVERSE_MORSE_CODE_DICT:
+            text += REVERSE_MORSE_CODE_DICT[code]
+    return text
+
+if __name__ == "__main__":
+    os.system('cls' if os.name == 'nt' else 'clear')  # Limpiar la pantalla
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((HOST, PORT))
+        s.listen()
+        print('Waiting for connection from the transmitter...')
+        while True:
+            conn, addr = s.accept()
+            with conn:
+                print('Connected to', addr)
+                while True:
+                    data = conn.recv(1024)
+                    if not data:
+                        break
+                    morse_code = data.decode()
+                    print("Received Morse Code:", morse_code)
+                    decoded_message = morse_to_text(morse_code)
+                    save_transmission("Transmission received: " + decoded_message)
